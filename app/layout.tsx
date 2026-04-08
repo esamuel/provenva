@@ -20,17 +20,10 @@ export const metadata: Metadata = {
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-  const clerkConfigured =
-    typeof publishableKey === 'string' &&
-    publishableKey.startsWith('pk_') &&
-    !publishableKey.includes('xxxx') &&
-    !publishableKey.includes('REPLACE_WITH')
-
   return (
     <html lang="en">
       <body className={`${inter.variable} ${jetbrainsMono.variable} antialiased bg-white text-gray-900`}>
-        {clerkConfigured ? <ClerkProvider>{children}</ClerkProvider> : children}
+        <ClerkProvider>{children}</ClerkProvider>
       </body>
     </html>
   )
