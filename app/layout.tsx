@@ -27,15 +27,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     !publishableKey.includes('xxxx') &&
     !publishableKey.includes('REPLACE_WITH')
 
-  const content = (
-    <html lang="en">
-      <body className={`${inter.variable} ${jetbrainsMono.variable} antialiased bg-white text-gray-900`}>{children}</body>
-    </html>
-  )
-
   return (
-    <>
-      {clerkConfigured ? <ClerkProvider>{content}</ClerkProvider> : content}
-    </>
+    <html lang="en">
+      <body className={`${inter.variable} ${jetbrainsMono.variable} antialiased bg-white text-gray-900`}>
+        {clerkConfigured ? <ClerkProvider>{children}</ClerkProvider> : children}
+      </body>
+    </html>
   )
 }
