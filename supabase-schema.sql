@@ -129,10 +129,11 @@ create index if not exists hires_business_idx    on public.hires(business_id);
 create index if not exists hires_va_idx          on public.hires(va_id);
 
 -- Full-text search index for marketplace keyword search
+-- Note: cast config to regconfig so to_tsvector(...) is IMMUTABLE (required for indexes).
 create index if not exists vas_search_fts_idx
   on public.vas
   using gin (to_tsvector(
-    'english',
+    'english'::regconfig,
     coalesce(full_name,'') || ' ' ||
     coalesce(headline,'')  || ' ' ||
     coalesce(bio,'')       || ' ' ||
@@ -143,10 +144,10 @@ create index if not exists vas_search_fts_idx
 create index if not exists vas_search_fts_v2_idx
   on public.vas
   using gin ((
-    setweight(to_tsvector('english', coalesce(full_name,'')), 'B') ||
-    setweight(to_tsvector('english', coalesce(headline,'')),  'A') ||
-    setweight(to_tsvector('english', coalesce(array_to_string(skills,' '), '')), 'A') ||
-    setweight(to_tsvector('english', coalesce(bio,'')),       'C')
+    setweight(to_tsvector('english'::regconfig, coalesce(full_name,'')), 'B') ||
+    setweight(to_tsvector('english'::regconfig, coalesce(headline,'')),  'A') ||
+    setweight(to_tsvector('english'::regconfig, coalesce(array_to_string(skills,' '), '')), 'A') ||
+    setweight(to_tsvector('english'::regconfig, coalesce(bio,'')),       'C')
   ));
 
 -- Marketplace search RPC (ranked + filterable + paginated)
@@ -175,12 +176,12 @@ begin
         when q is null then null
         else ts_rank_cd(
           (
-            setweight(to_tsvector('english', coalesce(v.full_name,'')), 'B') ||
-            setweight(to_tsvector('english', coalesce(v.headline,'')),  'A') ||
-            setweight(to_tsvector('english', coalesce(array_to_string(v.skills,' '), '')), 'A') ||
-            setweight(to_tsvector('english', coalesce(v.bio,'')),       'C')
+            setweight(to_tsvector('english'::regconfig, coalesce(v.full_name,'')), 'B') ||
+            setweight(to_tsvector('english'::regconfig, coalesce(v.headline,'')),  'A') ||
+            setweight(to_tsvector('english'::regconfig, coalesce(array_to_string(v.skills,' '), '')), 'A') ||
+            setweight(to_tsvector('english'::regconfig, coalesce(v.bio,'')),       'C')
           ),
-          websearch_to_tsquery('english', q)
+          websearch_to_tsquery('english'::regconfig, q)
         )
       end as rank
     from public.vas v
@@ -192,12 +193,12 @@ begin
       and (
         q is null
         or to_tsvector(
-            'english',
+            'english'::regconfig,
             coalesce(v.full_name,'') || ' ' ||
             coalesce(v.headline,'')  || ' ' ||
             coalesce(v.bio,'')       || ' ' ||
             coalesce(array_to_string(v.skills,' '), '')
-          ) @@ websearch_to_tsquery('english', q)
+          ) @@ websearch_to_tsquery('english'::regconfig, q)
       )
   )
   select b.*
