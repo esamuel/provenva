@@ -20,13 +20,22 @@ export const metadata: Metadata = {
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+  const clerkConfigured =
+    typeof publishableKey === 'string' &&
+    publishableKey.startsWith('pk_') &&
+    !publishableKey.includes('xxxx') &&
+    !publishableKey.includes('REPLACE_WITH')
+
+  const content = (
+    <html lang="en">
+      <body className={`${inter.variable} ${jetbrainsMono.variable} antialiased bg-white text-gray-900`}>{children}</body>
+    </html>
+  )
+
   return (
-    <ClerkProvider>
-      <html lang="en">
-        <body className={`${inter.variable} ${jetbrainsMono.variable} antialiased bg-white text-gray-900`}>
-          {children}
-        </body>
-      </html>
-    </ClerkProvider>
+    <>
+      {clerkConfigured ? <ClerkProvider>{content}</ClerkProvider> : content}
+    </>
   )
 }
