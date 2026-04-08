@@ -108,14 +108,18 @@ begin
 end;
 $$;
 
+-- Safe to re-run: triggers cannot be "replaced" in Postgres
+drop trigger if exists vas_updated_at on public.vas;
 create trigger vas_updated_at
   before update on public.vas
   for each row execute procedure public.set_updated_at();
 
+drop trigger if exists businesses_updated_at on public.businesses;
 create trigger businesses_updated_at
   before update on public.businesses
   for each row execute procedure public.set_updated_at();
 
+drop trigger if exists va_applications_updated_at on public.va_applications;
 create trigger va_applications_updated_at
   before update on public.va_applications
   for each row execute procedure public.set_updated_at();
@@ -230,29 +234,35 @@ alter table public.va_applications  enable row level security;
 alter table public.hires            enable row level security;
 
 -- VAs: anyone can read verified profiles; only owner can update
+drop policy if exists "verified vas are public" on public.vas;
 create policy "verified vas are public"
   on public.vas for select
   using (status = 'verified');
 
+drop policy if exists "va owner can update own profile" on public.vas;
 create policy "va owner can update own profile"
   on public.vas for update
   using (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
 
 -- Businesses: owner reads/updates own record only
+drop policy if exists "business owner reads own record" on public.businesses;
 create policy "business owner reads own record"
   on public.businesses for select
   using (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
 
+drop policy if exists "business owner updates own record" on public.businesses;
 create policy "business owner updates own record"
   on public.businesses for update
   using (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
 
 -- Applications: applicant reads own; admins use service role (bypasses RLS)
+drop policy if exists "applicant reads own application" on public.va_applications;
 create policy "applicant reads own application"
   on public.va_applications for select
   using (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
 
 -- Hires: business sees its own hires
+drop policy if exists "business sees own hires" on public.hires;
 create policy "business sees own hires"
   on public.hires for select
   using (
@@ -288,4 +298,5 @@ insert into public.vas (
   'admin', ARRAY['Email management','Calendar scheduling','Travel booking','Data entry','Document prep'],
   32, 'part_time', 'GMT-3 (São Paulo)', 'Brazil', 'verified',
   88, 6, 90, 3.0, 61
-);
+)
+on conflict (clerk_user_id) do nothing;
