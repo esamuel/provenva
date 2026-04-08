@@ -5,6 +5,20 @@ import { supabase } from '@/lib/supabase'
 import { CATEGORIES } from '@/types'
 import type { VA, VACategory } from '@/types'
 
+const TOP_MATCH_SKILLS = [
+  'Shopify',
+  'Notion',
+  'Zendesk',
+  'QuickBooks',
+  'Xero',
+  'Customer support',
+  'Executive assistant',
+  'Calendar scheduling',
+  'Email management',
+  'Social media',
+  'Data entry',
+] as const
+
 interface SearchParams {
   category?: VACategory
   availability?: string
@@ -46,6 +60,13 @@ export default async function BrowsePage({ searchParams }: { searchParams: Searc
   if (searchParams.min_rate) qs.set('min_rate', searchParams.min_rate)
   if (searchParams.max_rate) qs.set('max_rate', searchParams.max_rate)
   if (sort) qs.set('sort', sort)
+
+  const topChips = (() => {
+    const q = (searchParams.q ?? '').trim().toLowerCase()
+    if (!q) return []
+    const chips = TOP_MATCH_SKILLS.filter(s => !s.toLowerCase().includes(q)).slice(0, 6)
+    return chips
+  })()
 
   return (
     <>
@@ -157,6 +178,32 @@ export default async function BrowsePage({ searchParams }: { searchParams: Searc
                 </form>
               </div>
             </div>
+
+            {topChips.length > 0 && (
+              <div className="mb-5">
+                <p className="text-xs font-semibold text-gray-600 mb-2">Top matches</p>
+                <div className="flex flex-wrap gap-2">
+                  {topChips.map(chip => {
+                    const p = new URLSearchParams(qs)
+                    p.set('q', chip)
+                    p.set('page', '1')
+                    return (
+                      <a key={chip} href={`/browse?${p.toString()}`} className="badge hover:bg-gray-50">
+                        {chip}
+                      </a>
+                    )
+                  })}
+                  {!searchParams.category && (
+                    <a
+                      href="/browse?category=admin&sort=skill_desc&page=1"
+                      className="badge hover:bg-gray-50"
+                    >
+                      Admin Support
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
 
             {vas.length > 0 ? (
               <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">

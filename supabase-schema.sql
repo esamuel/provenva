@@ -139,6 +139,16 @@ create index if not exists vas_search_fts_idx
     coalesce(array_to_string(skills,' '), '')
   ));
 
+-- v2 weighted index (skills/headline weighted higher for marketplace queries)
+create index if not exists vas_search_fts_v2_idx
+  on public.vas
+  using gin ((
+    setweight(to_tsvector('english', coalesce(full_name,'')), 'B') ||
+    setweight(to_tsvector('english', coalesce(headline,'')),  'A') ||
+    setweight(to_tsvector('english', coalesce(array_to_string(skills,' '), '')), 'A') ||
+    setweight(to_tsvector('english', coalesce(bio,'')),       'C')
+  ));
+
 -- Marketplace search RPC (ranked + filterable + paginated)
 create or replace function public.search_verified_vas(
   p_q text default null,
@@ -164,12 +174,11 @@ begin
       case
         when q is null then null
         else ts_rank_cd(
-          to_tsvector(
-            'english',
-            coalesce(v.full_name,'') || ' ' ||
-            coalesce(v.headline,'')  || ' ' ||
-            coalesce(v.bio,'')       || ' ' ||
-            coalesce(array_to_string(v.skills,' '), '')
+          (
+            setweight(to_tsvector('english', coalesce(v.full_name,'')), 'B') ||
+            setweight(to_tsvector('english', coalesce(v.headline,'')),  'A') ||
+            setweight(to_tsvector('english', coalesce(array_to_string(v.skills,' '), '')), 'A') ||
+            setweight(to_tsvector('english', coalesce(v.bio,'')),       'C')
           ),
           websearch_to_tsquery('english', q)
         )
