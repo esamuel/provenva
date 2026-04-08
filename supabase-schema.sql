@@ -128,27 +128,34 @@ create index if not exists businesses_clerk_idx  on public.businesses(clerk_user
 create index if not exists hires_business_idx    on public.hires(business_id);
 create index if not exists hires_va_idx          on public.hires(va_id);
 
--- Full-text search index for marketplace keyword search
--- Note: cast config to regconfig so to_tsvector(...) is IMMUTABLE (required for indexes).
-create index if not exists vas_search_fts_idx
-  on public.vas
-  using gin (to_tsvector(
+-- Full-text search: wrap document in an IMMUTABLE SQL function so GIN indexes are valid
+-- (Some Postgres builds reject inline to_tsvector(...) in CREATE INDEX with 42P17.)
+create or replace function public.vas_search_document(
+  full_name text,
+  headline text,
+  bio text,
+  skills text[]
+)
+returns tsvector
+language sql
+immutable
+parallel safe
+as $$
+  select to_tsvector(
     'english'::regconfig,
     coalesce(full_name,'') || ' ' ||
     coalesce(headline,'')  || ' ' ||
     coalesce(bio,'')       || ' ' ||
     coalesce(array_to_string(skills,' '), '')
-  ));
+  );
+$$;
 
--- v2 weighted index (skills/headline weighted higher for marketplace queries)
-create index if not exists vas_search_fts_v2_idx
+drop index if exists public.vas_search_fts_idx;
+drop index if exists public.vas_search_fts_v2_idx;
+
+create index if not exists vas_search_fts_idx
   on public.vas
-  using gin ((
-    setweight(to_tsvector('english'::regconfig, coalesce(full_name,'')), 'B') ||
-    setweight(to_tsvector('english'::regconfig, coalesce(headline,'')),  'A') ||
-    setweight(to_tsvector('english'::regconfig, coalesce(array_to_string(skills,' '), '')), 'A') ||
-    setweight(to_tsvector('english'::regconfig, coalesce(bio,'')),       'C')
-  ));
+  using gin (public.vas_search_document(full_name, headline, bio, skills));
 
 -- Marketplace search RPC (ranked + filterable + paginated)
 create or replace function public.search_verified_vas(
@@ -192,13 +199,8 @@ begin
       and (p_max_rate is null or v.hourly_rate_usd <= p_max_rate)
       and (
         q is null
-        or to_tsvector(
-            'english'::regconfig,
-            coalesce(v.full_name,'') || ' ' ||
-            coalesce(v.headline,'')  || ' ' ||
-            coalesce(v.bio,'')       || ' ' ||
-            coalesce(array_to_string(v.skills,' '), '')
-          ) @@ websearch_to_tsquery('english'::regconfig, q)
+        or public.vas_search_document(v.full_name, v.headline, v.bio, v.skills)
+          @@ websearch_to_tsquery('english'::regconfig, q)
       )
   )
   select b.*
