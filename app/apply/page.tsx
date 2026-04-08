@@ -44,7 +44,7 @@ export default function ApplyPage() {
         <div className="max-w-lg mx-auto px-4 py-24 text-center">
           <CheckCircle size={48} className="text-emerald-500 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Application submitted!</h1>
-          <p className="text-gray-500">We'll review your profile and send you a skill test within 2 business days.</p>
+          <p className="text-gray-500">We&apos;ll review your profile and send you a skill test within 2 business days.</p>
         </div>
       </>
     )
@@ -143,7 +143,7 @@ export default function ApplyPage() {
           <button type="submit" disabled={loading} className="btn-primary w-full justify-center py-3 text-base">
             {loading ? 'Submitting…' : 'Submit application'}
           </button>
-          <p className="text-xs text-gray-400 text-center">You'll receive a skill test by email within 2 business days.</p>
+          <p className="text-xs text-gray-400 text-center">You&apos;ll receive a skill test by email within 2 business days.</p>
         </form>
       </div>
     </>

@@ -35,7 +35,7 @@ export default async function VADashboard() {
 
         {!va ? (
           <div className="text-center py-16 border border-dashed border-gray-200 rounded-xl">
-            <p className="text-gray-500 mb-4">You haven't applied yet.</p>
+            <p className="text-gray-500 mb-4">You haven&apos;t applied yet.</p>
             <Link href="/apply" className="btn-primary">Apply now</Link>
           </div>
         ) : (
@@ -45,10 +45,10 @@ export default async function VADashboard() {
               {status && <status.icon size={22} className={status.color} />}
               <div>
                 <p className="font-semibold text-gray-900">Status: {status?.label}</p>
-                {va.status === 'pending' && <p className="text-sm text-gray-500 mt-0.5">We'll send your skill test within 2 business days.</p>}
+                {va.status === 'pending' && <p className="text-sm text-gray-500 mt-0.5">We&apos;ll send your skill test within 2 business days.</p>}
                 {va.status === 'in_review' && <p className="text-sm text-gray-500 mt-0.5">Our team is reviewing your test results.</p>}
                 {va.status === 'verified' && <p className="text-sm text-gray-500 mt-0.5">Your profile is live. Businesses can find you now.</p>}
-                {va.status === 'rejected' && <p className="text-sm text-gray-500 mt-0.5">Sorry, your application didn't pass this round. You may reapply in 90 days.</p>}
+                {va.status === 'rejected' && <p className="text-sm text-gray-500 mt-0.5">Sorry, your application didn&apos;t pass this round. You may reapply in 90 days.</p>}
               </div>
             </div>
 

@@ -32,72 +32,92 @@ export default async function BrowsePage({ searchParams }: { searchParams: Searc
   return (
     <>
       <Navbar />
-      <div className="max-w-6xl mx-auto px-4 py-10">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-1">Browse verified VAs</h1>
-          <p className="text-gray-500 text-sm">Every profile below has passed skill tests and background checks.</p>
+      <div className="bg-gray-50/60 border-b border-gray-200/60">
+        <div className="container py-10">
+          <div className="max-w-3xl">
+            <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Browse verified VAs</h1>
+            <p className="text-gray-600 mt-2">
+              Marketplace-style hiring: search fast, compare confidently, and contact only after you subscribe.
+            </p>
+          </div>
         </div>
+      </div>
 
-        <div className="flex gap-8">
+      <div className="container py-10">
+        <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-8">
           {/* Filters sidebar */}
-          <aside className="w-56 flex-shrink-0">
-            <form className="space-y-6">
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Category</p>
-                <div className="space-y-1">
-                  <a href="/browse" className="block text-sm text-gray-600 hover:text-brand-500 py-0.5">All categories</a>
-                  {Object.entries(CATEGORIES).map(([key, label]) => (
-                    <a key={key} href={`/browse?category=${key}`}
-                       className={`block text-sm py-0.5 ${searchParams.category === key ? 'text-brand-500 font-medium' : 'text-gray-600 hover:text-brand-500'}`}>
-                      {label}
-                    </a>
-                  ))}
-                </div>
+          <aside className="lg:sticky lg:top-24 h-fit">
+            <div className="surface p-5">
+              <div className="flex items-center justify-between mb-4">
+                <p className="font-semibold text-gray-900">Filters</p>
+                <a href="/browse" className="text-sm text-gray-500 hover:text-gray-800">Reset</a>
               </div>
 
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Availability</p>
-                <div className="space-y-1">
-                  {['full_time', 'part_time', 'contract'].map(a => (
-                    <a key={a} href={`/browse?availability=${a}${searchParams.category ? `&category=${searchParams.category}` : ''}`}
-                       className="block text-sm text-gray-600 hover:text-brand-500 py-0.5 capitalize">
-                      {a.replace('_', ' ')}
-                    </a>
-                  ))}
+              <form className="space-y-5" action="/browse">
+                <div>
+                  <label className="label">Keyword</label>
+                  <input name="q" defaultValue={searchParams.q} placeholder="e.g. Shopify, Notion..." className="input" />
                 </div>
-              </div>
 
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Hourly rate</p>
-                <div className="flex gap-2 items-center">
-                  <input name="min_rate" defaultValue={searchParams.min_rate} placeholder="Min" className="input w-full text-xs py-1.5" />
-                  <span className="text-gray-400 text-xs">–</span>
-                  <input name="max_rate" defaultValue={searchParams.max_rate} placeholder="Max" className="input w-full text-xs py-1.5" />
+                <div>
+                  <label className="label">Category</label>
+                  <select name="category" defaultValue={searchParams.category ?? ''} className="input">
+                    <option value="">All categories</option>
+                    {Object.entries(CATEGORIES).map(([key, label]) => (
+                      <option key={key} value={key}>{label}</option>
+                    ))}
+                  </select>
                 </div>
-                <button type="submit" className="btn-primary w-full justify-center mt-2 py-1.5 text-xs">Apply</button>
-              </div>
-            </form>
+
+                <div>
+                  <label className="label">Availability</label>
+                  <select name="availability" defaultValue={searchParams.availability ?? ''} className="input capitalize">
+                    <option value="">Any</option>
+                    <option value="full_time">Full time</option>
+                    <option value="part_time">Part time</option>
+                    <option value="contract">Contract</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="label">Hourly rate (USD)</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input name="min_rate" defaultValue={searchParams.min_rate} placeholder="Min" className="input" inputMode="numeric" />
+                    <input name="max_rate" defaultValue={searchParams.max_rate} placeholder="Max" className="input" inputMode="numeric" />
+                  </div>
+                </div>
+
+                <button type="submit" className="btn-primary w-full">Apply filters</button>
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  Tip: start broad, then narrow by category + rate once you see profiles you like.
+                </p>
+              </form>
+            </div>
           </aside>
 
           {/* Results */}
-          <div className="flex-1">
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-sm text-gray-500">{vas?.length ?? 0} verified VAs found</p>
-              <input
-                placeholder="Search by skill or keyword..."
-                defaultValue={searchParams.q}
-                className="input w-64 text-sm"
-              />
+          <div className="min-w-0">
+            <div className="flex items-center justify-between gap-4 mb-5">
+              <div>
+                <p className="text-sm text-gray-600">
+                  <span className="font-semibold text-gray-900">{vas?.length ?? 0}</span> verified VAs
+                </p>
+                <p className="text-xs text-gray-500 mt-0.5">Sorted by skill score (highest first).</p>
+              </div>
+              <div className="hidden sm:flex items-center gap-2">
+                <span className="badge">Background checked</span>
+                <span className="badge">Skill tested</span>
+              </div>
             </div>
 
             {vas && vas.length > 0 ? (
-              <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+              <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
                 {vas.map(va => <VACard key={va.id} va={va} />)}
               </div>
             ) : (
-              <div className="text-center py-20 text-gray-400">
-                <p className="text-lg font-medium mb-1">No VAs found</p>
-                <p className="text-sm">Try adjusting your filters.</p>
+              <div className="surface p-10 text-center">
+                <p className="text-lg font-semibold text-gray-900 mb-1">No matches</p>
+                <p className="text-sm text-gray-600">Try removing filters, or search a broader keyword.</p>
               </div>
             )}
           </div>
