@@ -37,7 +37,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: Searc
 
   const sort = searchParams.sort ?? (searchParams.q ? 'relevance' : 'skill_desc')
 
-  const { data } = await supabase.rpc('search_verified_vas', {
+  const { data, error: rpcError } = await supabase.rpc('search_verified_vas', {
     p_q: searchParams.q ?? null,
     p_category: searchParams.category ?? null,
     p_availability: searchParams.availability ?? null,
@@ -46,9 +46,9 @@ export default async function BrowsePage({ searchParams }: { searchParams: Searc
     p_sort: sort,
     p_limit: limitPlusOne,
     p_offset: offset,
-  }) as { data: VA[] | null }
+  })
 
-  const vasAll = data ?? []
+  const vasAll = (data as VA[] | null) ?? []
   const hasNext = vasAll.length > pageSize
   const hasPrev = page > 1
   const vas = vasAll.slice(0, pageSize)
@@ -67,6 +67,24 @@ export default async function BrowsePage({ searchParams }: { searchParams: Searc
     const chips = TOP_MATCH_SKILLS.filter(s => !s.toLowerCase().includes(q)).slice(0, 6)
     return chips
   })()
+
+  if (rpcError) {
+    return (
+      <>
+        <Navbar />
+        <div className="container py-16">
+          <div className="surface p-8 max-w-xl">
+            <h1 className="text-xl font-bold text-gray-900">Search unavailable</h1>
+            <p className="text-sm text-gray-600 mt-2">
+              The database search function could not run. In Supabase, run the latest <code className="text-xs bg-gray-100 px-1 rounded">supabase-schema.sql</code> (including{' '}
+              <code className="text-xs bg-gray-100 px-1 rounded">GRANT EXECUTE</code> on <code className="text-xs bg-gray-100 px-1 rounded">search_verified_vas</code>) and confirm env keys match this project.
+            </p>
+            <p className="text-xs text-gray-500 mt-3 font-mono break-all">{rpcError.message}</p>
+          </div>
+        </div>
+      </>
+    )
+  }
 
   return (
     <>
@@ -162,9 +180,6 @@ export default async function BrowsePage({ searchParams }: { searchParams: Searc
                     name="sort"
                     defaultValue={sort}
                     className="input py-2.5"
-                    onChange={(e) => {
-                      // no-op on server; form submit happens via user
-                    }}
                   >
                     <option value="relevance">Relevance</option>
                     <option value="skill_desc">Skill score</option>

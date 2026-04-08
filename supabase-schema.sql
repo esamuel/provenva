@@ -219,6 +219,10 @@ begin
 end;
 $$;
 
+-- Allow the browser (anon key) and logged-in users to run marketplace search
+grant execute on function public.vas_search_document(text, text, text, text[]) to anon, authenticated, service_role;
+grant execute on function public.search_verified_vas to anon, authenticated, service_role;
+
 -- ── Row Level Security ────────────────────────────────────────
 alter table public.vas              enable row level security;
 alter table public.businesses       enable row level security;
