@@ -128,6 +128,85 @@ create index if not exists businesses_clerk_idx  on public.businesses(clerk_user
 create index if not exists hires_business_idx    on public.hires(business_id);
 create index if not exists hires_va_idx          on public.hires(va_id);
 
+-- Full-text search index for marketplace keyword search
+create index if not exists vas_search_fts_idx
+  on public.vas
+  using gin (to_tsvector(
+    'english',
+    coalesce(full_name,'') || ' ' ||
+    coalesce(headline,'')  || ' ' ||
+    coalesce(bio,'')       || ' ' ||
+    coalesce(array_to_string(skills,' '), '')
+  ));
+
+-- Marketplace search RPC (ranked + filterable + paginated)
+create or replace function public.search_verified_vas(
+  p_q text default null,
+  p_category text default null,
+  p_availability text default null,
+  p_min_rate integer default null,
+  p_max_rate integer default null,
+  p_sort text default 'relevance',
+  p_limit integer default 24,
+  p_offset integer default 0
+)
+returns setof public.vas
+language plpgsql
+stable
+as $$
+declare
+  q text := nullif(trim(coalesce(p_q, '')), '');
+begin
+  return query
+  with base as (
+    select
+      v.*,
+      case
+        when q is null then null
+        else ts_rank_cd(
+          to_tsvector(
+            'english',
+            coalesce(v.full_name,'') || ' ' ||
+            coalesce(v.headline,'')  || ' ' ||
+            coalesce(v.bio,'')       || ' ' ||
+            coalesce(array_to_string(v.skills,' '), '')
+          ),
+          websearch_to_tsquery('english', q)
+        )
+      end as rank
+    from public.vas v
+    where v.status = 'verified'
+      and (p_category is null or v.category = p_category)
+      and (p_availability is null or v.availability = p_availability)
+      and (p_min_rate is null or v.hourly_rate_usd >= p_min_rate)
+      and (p_max_rate is null or v.hourly_rate_usd <= p_max_rate)
+      and (
+        q is null
+        or to_tsvector(
+            'english',
+            coalesce(v.full_name,'') || ' ' ||
+            coalesce(v.headline,'')  || ' ' ||
+            coalesce(v.bio,'')       || ' ' ||
+            coalesce(array_to_string(v.skills,' '), '')
+          ) @@ websearch_to_tsquery('english', q)
+      )
+  )
+  select b.*
+  from base b
+  order by
+    case when p_sort = 'rate_asc' then b.hourly_rate_usd end asc nulls last,
+    case when p_sort = 'rate_desc' then b.hourly_rate_usd end desc nulls last,
+    case when p_sort = 'response_asc' then b.avg_response_hours end asc nulls last,
+    case when p_sort = 'skill_desc' then b.test_score end desc nulls last,
+    case when p_sort = 'newest' then b.created_at end desc nulls last,
+    case when p_sort = 'relevance' then b.rank end desc nulls last,
+    b.test_score desc nulls last,
+    b.created_at desc
+  limit greatest(1, least(p_limit, 50))
+  offset greatest(p_offset, 0);
+end;
+$$;
+
 -- ── Row Level Security ────────────────────────────────────────
 alter table public.vas              enable row level security;
 alter table public.businesses       enable row level security;

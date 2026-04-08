@@ -11,23 +11,41 @@ interface SearchParams {
   min_rate?: string
   max_rate?: string
   q?: string
+  sort?: string
+  page?: string
 }
 
 export default async function BrowsePage({ searchParams }: { searchParams: SearchParams }) {
-  // Build query
-  let query = supabase
-    .from('vas')
-    .select('*')
-    .eq('status', 'verified')
-    .order('test_score', { ascending: false })
+  const page = Math.max(1, parseInt(searchParams.page ?? '1') || 1)
+  const pageSize = 24
+  const limitPlusOne = pageSize + 1
+  const offset = (page - 1) * pageSize
 
-  if (searchParams.category) query = query.eq('category', searchParams.category)
-  if (searchParams.availability) query = query.eq('availability', searchParams.availability)
-  if (searchParams.min_rate) query = query.gte('hourly_rate_usd', parseInt(searchParams.min_rate))
-  if (searchParams.max_rate) query = query.lte('hourly_rate_usd', parseInt(searchParams.max_rate))
-  if (searchParams.q) query = query.ilike('headline', `%${searchParams.q}%`)
+  const sort = searchParams.sort ?? (searchParams.q ? 'relevance' : 'skill_desc')
 
-  const { data: vas } = await query as { data: VA[] | null }
+  const { data } = await supabase.rpc('search_verified_vas', {
+    p_q: searchParams.q ?? null,
+    p_category: searchParams.category ?? null,
+    p_availability: searchParams.availability ?? null,
+    p_min_rate: searchParams.min_rate ? parseInt(searchParams.min_rate) : null,
+    p_max_rate: searchParams.max_rate ? parseInt(searchParams.max_rate) : null,
+    p_sort: sort,
+    p_limit: limitPlusOne,
+    p_offset: offset,
+  }) as { data: VA[] | null }
+
+  const vasAll = data ?? []
+  const hasNext = vasAll.length > pageSize
+  const hasPrev = page > 1
+  const vas = vasAll.slice(0, pageSize)
+
+  const qs = new URLSearchParams()
+  if (searchParams.q) qs.set('q', searchParams.q)
+  if (searchParams.category) qs.set('category', searchParams.category)
+  if (searchParams.availability) qs.set('availability', searchParams.availability)
+  if (searchParams.min_rate) qs.set('min_rate', searchParams.min_rate)
+  if (searchParams.max_rate) qs.set('max_rate', searchParams.max_rate)
+  if (sort) qs.set('sort', sort)
 
   return (
     <>
@@ -54,6 +72,8 @@ export default async function BrowsePage({ searchParams }: { searchParams: Searc
               </div>
 
               <form className="space-y-5" action="/browse">
+                <input type="hidden" name="sort" value={sort} />
+                <input type="hidden" name="page" value="1" />
                 <div>
                   <label className="label">Keyword</label>
                   <input name="q" defaultValue={searchParams.q} placeholder="e.g. Shopify, Notion..." className="input" />
@@ -100,17 +120,45 @@ export default async function BrowsePage({ searchParams }: { searchParams: Searc
             <div className="flex items-center justify-between gap-4 mb-5">
               <div>
                 <p className="text-sm text-gray-600">
-                  <span className="font-semibold text-gray-900">{vas?.length ?? 0}</span> verified VAs
+                  <span className="font-semibold text-gray-900">{vas.length}</span> results on this page
                 </p>
-                <p className="text-xs text-gray-500 mt-0.5">Sorted by skill score (highest first).</p>
+                <p className="text-xs text-gray-500 mt-0.5 capitalize">
+                  Sorted by {sort.replace('_', ' ')} • Page {page}
+                </p>
               </div>
-              <div className="hidden sm:flex items-center gap-2">
-                <span className="badge">Background checked</span>
-                <span className="badge">Skill tested</span>
+              <div className="flex items-center gap-2">
+                <div className="hidden sm:flex items-center gap-2">
+                  <span className="badge">Background checked</span>
+                  <span className="badge">Skill tested</span>
+                </div>
+                <form action="/browse" className="flex items-center gap-2">
+                  {/* preserve filters */}
+                  {Array.from(qs.entries()).map(([k, v]) =>
+                    k === 'sort' || k === 'page' ? null : <input key={k} type="hidden" name={k} value={v} />
+                  )}
+                  <label className="text-sm text-gray-600 hidden sm:block">Sort</label>
+                  <select
+                    name="sort"
+                    defaultValue={sort}
+                    className="input py-2.5"
+                    onChange={(e) => {
+                      // no-op on server; form submit happens via user
+                    }}
+                  >
+                    <option value="relevance">Relevance</option>
+                    <option value="skill_desc">Skill score</option>
+                    <option value="rate_asc">Rate: low to high</option>
+                    <option value="rate_desc">Rate: high to low</option>
+                    <option value="response_asc">Response time</option>
+                    <option value="newest">Newest</option>
+                  </select>
+                  <input type="hidden" name="page" value="1" />
+                  <button className="btn-outline hidden sm:inline-flex" type="submit">Apply</button>
+                </form>
               </div>
             </div>
 
-            {vas && vas.length > 0 ? (
+            {vas.length > 0 ? (
               <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
                 {vas.map(va => <VACard key={va.id} va={va} />)}
               </div>
@@ -118,6 +166,32 @@ export default async function BrowsePage({ searchParams }: { searchParams: Searc
               <div className="surface p-10 text-center">
                 <p className="text-lg font-semibold text-gray-900 mb-1">No matches</p>
                 <p className="text-sm text-gray-600">Try removing filters, or search a broader keyword.</p>
+              </div>
+            )}
+
+            {(hasPrev || hasNext) && (
+              <div className="flex items-center justify-between mt-8">
+                <a
+                  className={hasPrev ? 'btn-outline' : 'btn-outline opacity-40 pointer-events-none'}
+                  href={`/browse?${(() => {
+                    const p = new URLSearchParams(qs)
+                    p.set('page', String(page - 1))
+                    return p.toString()
+                  })()}`}
+                >
+                  Previous
+                </a>
+                <span className="text-sm text-gray-600">Page {page}</span>
+                <a
+                  className={hasNext ? 'btn-outline' : 'btn-outline opacity-40 pointer-events-none'}
+                  href={`/browse?${(() => {
+                    const p = new URLSearchParams(qs)
+                    p.set('page', String(page + 1))
+                    return p.toString()
+                  })()}`}
+                >
+                  Next
+                </a>
               </div>
             )}
           </div>
