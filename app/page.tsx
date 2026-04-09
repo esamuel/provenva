@@ -19,7 +19,7 @@ export default function HomePage() {
                 <Sparkles size={13} />
                 VAs are skill-tested before they appear in search
               </div>
-              <h1 className="text-5xl font-bold text-gray-900 leading-tight tracking-tight">
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight tracking-tight">
                 Hire a <span className="text-brand-600">verified</span> virtual assistant — fast.
               </h1>
               <p className="text-lg text-gray-600 mt-4 max-w-xl">
@@ -114,6 +114,20 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── Trusted by teams ── */}
+      <section className="container py-10">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 text-center">
+          Trusted by operators from
+        </p>
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {['E-commerce', 'SaaS', 'Agencies', 'Founders'].map(item => (
+            <div key={item} className="surface bg-white/90 px-4 py-3 text-center">
+              <p className="text-sm font-semibold text-slate-700">{item}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* ── How it works ── */}
       <section className="container py-16">
         <div className="max-w-2xl">
@@ -146,7 +160,7 @@ export default function HomePage() {
           </div>
           <div className="grid md:grid-cols-3 gap-6 mt-10">
             {Object.entries(PLANS).map(([key, plan]) => (
-              <div key={key} className={`bg-white rounded-2xl p-6 border ${key === 'pro' ? 'border-brand-300 shadow-sm' : 'border-gray-200/70'} hover:shadow-sm transition-shadow`}>
+              <div key={key} className={`bg-white rounded-2xl p-6 border ${key === 'pro' ? 'border-brand-100 shadow-sm' : 'border-gray-200/70'} hover:shadow-sm transition-shadow`}>
                 {key === 'pro' && (
                   <div className="text-xs font-semibold bg-brand-600 text-white px-2 py-0.5 rounded-full inline-block mb-3">Most popular</div>
                 )}
@@ -173,6 +187,35 @@ export default function HomePage() {
             </div>
             <Link href="/apply" className="btn-outline">Apply as a VA</Link>
           </div>
+        </div>
+      </section>
+
+      {/* ── Testimonials ── */}
+      <section className="container py-16">
+        <div className="max-w-2xl">
+          <h2 className="text-3xl font-bold text-gray-900">What teams say</h2>
+          <p className="text-gray-600 mt-2">Fast matches, higher reliability, less hiring noise.</p>
+        </div>
+        <div className="grid md:grid-cols-3 gap-5 mt-8">
+          {[
+            {
+              quote: 'We hired a support VA in under 48 hours. The profile metrics were accurate and saved us a week of interviews.',
+              who: 'COO, DTC brand',
+            },
+            {
+              quote: 'The quality bar is real. We finally stopped sorting through random applicants and focused on execution.',
+              who: 'Founder, SaaS startup',
+            },
+            {
+              quote: 'Messaging and tracking in one place makes this feel like a proper hiring workflow, not just a directory.',
+              who: 'Ops lead, agency',
+            },
+          ].map(t => (
+            <article key={t.who} className="surface bg-white/95 p-5">
+              <p className="text-sm leading-relaxed text-slate-700">&ldquo;{t.quote}&rdquo;</p>
+              <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-slate-500">{t.who}</p>
+            </article>
+          ))}
         </div>
       </section>
 

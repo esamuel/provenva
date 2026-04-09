@@ -30,9 +30,9 @@ export default async function VADashboard() {
   return (
     <>
       <Navbar />
-      <div className="max-w-3xl mx-auto px-4 py-10">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">VA Dashboard</h1>
+      <div className="mx-auto max-w-3xl px-4 py-10">
+        <div className="mb-6 flex items-center justify-between">
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">VA Dashboard</h1>
           {va && (
             <Link href="/dashboard/va/messages" className="btn-outline text-sm inline-flex items-center gap-1.5">
               <MessageSquare size={16} /> Inbox
@@ -41,27 +41,27 @@ export default async function VADashboard() {
         </div>
 
         {!va ? (
-          <div className="text-center py-16 border border-dashed border-gray-200 rounded-xl">
-            <p className="text-gray-500 mb-4">You haven&apos;t applied yet.</p>
+          <div className="rounded-xl border border-dashed border-slate-300 bg-white/70 py-16 text-center">
+            <p className="mb-4 text-slate-500">You haven&apos;t applied yet.</p>
             <Link href="/apply" className="btn-primary">Apply now</Link>
           </div>
         ) : (
           <div className="space-y-6">
             {/* Status card */}
-            <div className={`${status?.bg} rounded-xl p-5 flex items-center gap-3`}>
+            <div className={`${status?.bg} flex items-center gap-3 rounded-xl border border-white/70 p-5 shadow-sm`}>
               {status && <status.icon size={22} className={status.color} />}
               <div>
-                <p className="font-semibold text-gray-900">Status: {status?.label}</p>
-                {va.status === 'pending' && <p className="text-sm text-gray-500 mt-0.5">We&apos;ll send your skill test within 2 business days.</p>}
-                {va.status === 'in_review' && <p className="text-sm text-gray-500 mt-0.5">Our team is reviewing your test results.</p>}
-                {va.status === 'verified' && <p className="text-sm text-gray-500 mt-0.5">Your profile is live. Businesses can find you now.</p>}
-                {va.status === 'rejected' && <p className="text-sm text-gray-500 mt-0.5">Sorry, your application didn&apos;t pass this round. You may reapply in 90 days.</p>}
+                <p className="font-semibold text-slate-900">Status: {status?.label}</p>
+                {va.status === 'pending' && <p className="mt-0.5 text-sm text-slate-600">We&apos;ll send your skill test within 2 business days.</p>}
+                {va.status === 'in_review' && <p className="mt-0.5 text-sm text-slate-600">Our team is reviewing your test results.</p>}
+                {va.status === 'verified' && <p className="mt-0.5 text-sm text-slate-600">Your profile is live. Businesses can find you now.</p>}
+                {va.status === 'rejected' && <p className="mt-0.5 text-sm text-slate-600">Sorry, your application didn&apos;t pass this round. You may reapply in 90 days.</p>}
               </div>
             </div>
 
             {/* Profile summary */}
-            <div className="card space-y-3">
-              <h2 className="font-semibold text-gray-900">Your profile</h2>
+            <div className="card space-y-3 bg-white/95">
+              <h2 className="font-semibold text-slate-900">Your profile</h2>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div><span className="text-gray-400">Name</span><p className="font-medium">{va.full_name}</p></div>
                 <div><span className="text-gray-400">Category</span><p className="font-medium">{CATEGORIES[va.category]}</p></div>

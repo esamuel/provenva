@@ -10,7 +10,10 @@
     --verified: #10b981;
   }
   * { box-sizing: border-box; }
-  body { font-family: var(--font-sans), system-ui, sans-serif; }
+  body {
+    font-family: var(--font-sans), system-ui, sans-serif;
+    @apply bg-slate-50/70 text-slate-900 antialiased;
+  }
 }
 
 @layer components {
@@ -19,13 +22,13 @@
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-semibold px-5 py-2.5 rounded-xl transition-colors text-sm shadow-sm;
+    @apply inline-flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-semibold px-5 py-2.5 rounded-xl transition-all text-sm shadow-sm hover:shadow-md hover:-translate-y-[1px];
   }
   .btn-outline {
-    @apply inline-flex items-center justify-center gap-2 border border-gray-200 bg-white hover:border-brand-200 hover:bg-brand-50/50 text-gray-800 font-semibold px-5 py-2.5 rounded-xl transition-colors text-sm;
+    @apply inline-flex items-center justify-center gap-2 border border-gray-200 bg-white hover:border-brand-100 hover:bg-brand-50/50 text-gray-800 font-semibold px-5 py-2.5 rounded-xl transition-all text-sm hover:shadow-sm;
   }
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 text-gray-700 hover:bg-gray-50 font-semibold px-3 py-2 rounded-xl transition-colors text-sm;
+    @apply inline-flex items-center justify-center gap-2 text-gray-700 hover:bg-gray-100/70 font-semibold px-3 py-2 rounded-xl transition-colors text-sm;
   }
   .badge-verified {
     @apply inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 text-xs font-medium px-2 py-0.5 rounded-full;
@@ -37,16 +40,16 @@
     @apply inline-flex items-center gap-1 rounded-full border border-gray-200 bg-white px-2 py-0.5 text-xs font-medium text-gray-700;
   }
   .card {
-    @apply bg-white border border-gray-200/70 rounded-2xl p-5 hover:border-gray-300 hover:shadow-sm transition-all;
+    @apply bg-white border border-gray-200/70 rounded-2xl p-5 shadow-sm shadow-slate-200/60 hover:border-gray-300 hover:shadow-md transition-all;
   }
   .input {
-    @apply w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/25 focus:border-brand-300 transition placeholder:text-gray-400;
+    @apply w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/15 focus:border-brand-500 transition placeholder:text-gray-400;
   }
   .label {
     @apply block text-sm font-medium text-gray-700 mb-1;
   }
 
   .surface {
-    @apply bg-white border border-gray-200/70 rounded-2xl shadow-sm;
+    @apply bg-white border border-gray-200/70 rounded-2xl shadow-sm shadow-slate-200/60;
   }
 }

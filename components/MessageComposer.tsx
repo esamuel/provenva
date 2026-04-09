@@ -31,17 +31,18 @@ export default function MessageComposer({ conversationId }: { conversationId: st
   }
 
   return (
-    <form onSubmit={send} className="space-y-2">
+    <form onSubmit={send} className="space-y-3">
       {err && <p className="text-sm text-red-600">{err}</p>}
       <textarea
         value={body}
         onChange={e => setBody(e.target.value)}
         placeholder="Write a message…"
         rows={4}
-        className="input w-full resize-y min-h-[100px]"
+        className="input min-h-[100px] w-full resize-y bg-white"
         maxLength={8000}
       />
-      <div className="flex justify-end">
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-slate-400">{body.length}/8000</p>
         <button type="submit" className="btn-primary" disabled={loading || !body.trim()}>
           {loading ? 'Sending…' : 'Send'}
         </button>

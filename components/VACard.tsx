@@ -8,15 +8,15 @@ export default function VACard({ va }: { va: VA }) {
   return (
     <Link
       href={`/va/${va.id}`}
-      className="group block bg-white border border-gray-200/70 rounded-2xl p-5 hover:border-gray-300 hover:shadow-sm transition-all"
+      className="group block rounded-2xl border border-slate-200/80 bg-white/95 p-5 shadow-sm shadow-slate-200/70 transition-all hover:-translate-y-0.5 hover:border-brand-100 hover:shadow-md"
     >
       <div className="flex items-start gap-3">
-        <div className="w-11 h-11 rounded-2xl bg-gradient-to-b from-brand-50 to-white border border-brand-100 flex items-center justify-center text-brand-700 font-semibold text-sm flex-shrink-0">
+        <div className="h-11 w-11 flex-shrink-0 rounded-2xl border border-brand-100 bg-gradient-to-b from-brand-50 to-white flex items-center justify-center text-sm font-semibold text-brand-700">
           {va.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <p className="font-semibold text-gray-900 truncate group-hover:text-brand-700 transition-colors">{va.full_name}</p>
+            <p className="truncate font-semibold text-slate-900 transition-colors group-hover:text-brand-700">{va.full_name}</p>
             {va.status === 'verified' && (
               <span className="badge-verified">
                 <CheckCircle size={13} className="text-emerald-600" />
@@ -24,8 +24,8 @@ export default function VACard({ va }: { va: VA }) {
               </span>
             )}
           </div>
-          <p className="text-sm text-gray-600">{va.headline}</p>
-          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
+          <p className="text-sm text-slate-600">{va.headline}</p>
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
             <span className="badge">{CATEGORIES[va.category]}</span>
             <span className="inline-flex items-center gap-1">
               <MapPin size={12} />
@@ -34,21 +34,21 @@ export default function VACard({ va }: { va: VA }) {
             <span className="capitalize">{va.availability.replace('_', ' ')}</span>
           </div>
         </div>
-        <div className="text-right flex-shrink-0">
-          <p className="text-sm text-gray-500">Rate</p>
-          <p className="font-bold text-gray-900 text-base">${va.hourly_rate_usd}/hr</p>
+        <div className="flex-shrink-0 text-right">
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Rate</p>
+          <p className="text-base font-bold text-slate-900">${va.hourly_rate_usd}/hr</p>
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-1.5 mt-4">
+      <div className="mt-4 flex flex-wrap gap-1.5">
         {va.skills.slice(0, 4).map(skill => (
-          <span key={skill} className="text-xs bg-gray-50 text-gray-700 px-2 py-0.5 rounded-full border border-gray-200/70">
+          <span key={skill} className="rounded-full border border-slate-200/70 bg-slate-50 px-2.5 py-0.5 text-xs text-slate-700">
             {skill}
           </span>
         ))}
       </div>
 
-      <div className="flex items-center gap-4 pt-4 mt-4 border-t border-gray-100 text-xs text-gray-600">
+      <div className="mt-4 flex items-center gap-4 border-t border-slate-100 pt-4 text-xs text-slate-600">
         {va.test_score !== null && (
           <span className="flex items-center gap-1">
             <Star size={12} className="text-amber-500" />

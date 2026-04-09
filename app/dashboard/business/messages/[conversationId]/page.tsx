@@ -51,34 +51,34 @@ export default async function BusinessThreadPage({
   return (
     <>
       <Navbar />
-      <div className="max-w-2xl mx-auto px-4 py-8">
+      <div className="mx-auto max-w-2xl px-4 py-8">
         <Link
           href="/dashboard/business/messages"
-          className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 mb-6"
+          className="mb-6 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800"
         >
           <ArrowLeft size={16} /> All conversations
         </Link>
 
-        <div className="mb-6">
-          <h1 className="text-xl font-bold text-gray-900">{va?.full_name}</h1>
-          <p className="text-sm text-gray-500">{va?.headline}</p>
+        <div className="mb-4 rounded-xl border border-slate-200/80 bg-white/90 px-4 py-3 shadow-sm shadow-slate-200/50">
+          <h1 className="text-xl font-bold text-slate-900">{va?.full_name}</h1>
+          <p className="text-sm text-slate-500">{va?.headline}</p>
         </div>
 
-        <div className="space-y-3 mb-6 min-h-[200px]">
+        <div className="mb-6 min-h-[200px] space-y-3 rounded-xl border border-slate-200/80 bg-white/80 p-4 shadow-sm shadow-slate-200/40">
           {rows.map(m => (
             <div
               key={m.id}
               className={clsx(
-                'rounded-xl px-4 py-3 max-w-[85%] text-sm',
+                'max-w-[85%] rounded-xl px-4 py-3 text-sm shadow-sm',
                 m.sender_role === 'business'
                   ? 'ml-auto bg-brand-600 text-white'
-                  : 'mr-auto bg-gray-100 text-gray-900'
+                  : 'mr-auto border border-slate-200 bg-slate-100 text-slate-900'
               )}
             >
               <p className="whitespace-pre-wrap break-words">{m.body}</p>
               <p
                 className={clsx(
-                  'text-[10px] mt-2 opacity-70',
+                  'mt-2 text-[10px] opacity-70',
                   m.sender_role === 'business' ? 'text-brand-100' : 'text-gray-400'
                 )}
               >
@@ -88,8 +88,8 @@ export default async function BusinessThreadPage({
           ))}
         </div>
 
-        <div className="surface p-4">
-          <p className="text-xs font-medium text-gray-500 mb-2">Reply</p>
+        <div className="surface bg-white/95 p-4">
+          <p className="mb-2 text-xs font-medium text-slate-500">Reply</p>
           <MessageComposer conversationId={conv.id} />
         </div>
       </div>

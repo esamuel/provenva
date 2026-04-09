@@ -249,7 +249,32 @@ begin
           @@ websearch_to_tsquery('english'::regconfig, q)
       )
   )
-  select b.*
+  select
+    b.id,
+    b.clerk_user_id,
+    b.full_name,
+    b.avatar_url,
+    b.headline,
+    b.bio,
+    b.category,
+    b.skills,
+    b.hourly_rate_usd,
+    b.availability,
+    b.timezone,
+    b.country,
+    b.status,
+    b.test_score,
+    b.portfolio_url,
+    b.linkedin_url,
+    b.years_experience,
+    b.rehire_rate,
+    b.avg_response_hours,
+    b.completed_jobs,
+    b.is_premium,
+    b.stripe_customer_id,
+    b.stripe_subscription_id,
+    b.created_at,
+    b.updated_at
   from base b
   order by
     case when p_sort = 'rate_asc' then b.hourly_rate_usd end asc nulls last,
