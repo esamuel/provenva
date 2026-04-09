@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { supabaseAdmin } from '@/lib/supabase'
-import { createBusinessCheckout } from '@/lib/stripe'
+import { createCheckoutSession } from '@/lib/paddle'
 
 export async function GET(req: NextRequest) {
   const { userId } = auth()
@@ -20,15 +20,11 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard/va', req.url))
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL!
-
-  const session = await createBusinessCheckout({
-    priceId:    process.env.STRIPE_PRICE_VA_VERIFIED!,
+  const session = await createCheckoutSession({
+    priceId: process.env.PADDLE_PRICE_VA_VERIFIED!,
     customerId: va?.stripe_customer_id ?? undefined,
-    successUrl: `${appUrl}/dashboard/va?badge=1`,
-    cancelUrl:  `${appUrl}/dashboard/va`,
-    metadata:   { clerk_user_id: userId, type: 'va_badge' },
+    metadata: { clerk_user_id: userId, type: 'va_badge' },
   })
 
-  return NextResponse.redirect(session.url!)
+  return NextResponse.redirect(session.url)
 }

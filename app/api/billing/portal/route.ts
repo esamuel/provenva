@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { supabaseAdmin } from '@/lib/supabase'
-import { createPortalSession } from '@/lib/stripe'
+import { createPortalSession } from '@/lib/paddle'
 
 export async function GET(req: NextRequest) {
   const { userId } = auth()
@@ -28,8 +28,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard/business', req.url))
   }
 
-  const appUrl  = process.env.NEXT_PUBLIC_APP_URL!
-  const session = await createPortalSession(customerId, `${appUrl}/dashboard/business`)
+  const session = await createPortalSession(customerId)
 
   return NextResponse.redirect(session.url)
 }

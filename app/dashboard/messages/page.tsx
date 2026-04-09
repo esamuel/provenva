@@ -2,10 +2,12 @@
 import { auth } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import { supabaseAdmin } from '@/lib/supabase'
+import { isAdminUserId } from '@/lib/admin'
 
 export default async function MessagesHubPage() {
   const { userId } = auth()
   if (!userId) redirect('/sign-in')
+  if (isAdminUserId(userId)) redirect('/admin')
 
   const [{ data: business }, { data: va }] = await Promise.all([
     supabaseAdmin.from('businesses').select('id').eq('clerk_user_id', userId).maybeSingle(),

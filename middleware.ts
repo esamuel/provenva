@@ -1,23 +1,16 @@
 // middleware.ts
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
+import { isClerkPublishableKeyValid } from '@/lib/clerk-config'
 
 const isProtected = createRouteMatcher([
   '/dashboard(.*)',
+  '/admin(.*)',
   '/apply(.*)',
   '/onboarding(.*)',
 ])
 
-const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-const secretKey = process.env.CLERK_SECRET_KEY
-
-const clerkConfigured =
-  typeof publishableKey === 'string' &&
-  publishableKey.startsWith('pk_') &&
-  !publishableKey.includes('xxxx') &&
-  typeof secretKey === 'string' &&
-  secretKey.startsWith('sk_') &&
-  !secretKey.includes('xxxx')
+const clerkConfigured = isClerkPublishableKeyValid(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)
 
 export default clerkConfigured
   ? clerkMiddleware((auth, req) => {

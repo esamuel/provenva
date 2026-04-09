@@ -4,12 +4,14 @@ import { auth } from '@clerk/nextjs/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { canBusinessMessage } from '@/lib/messaging'
 import type { Business } from '@/types'
+import { isAdminUserId } from '@/lib/admin'
 
 type Ctx = { params: { conversationId: string } }
 
 export async function POST(req: NextRequest, { params }: Ctx) {
   const { userId } = auth()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const isAdmin = isAdminUserId(userId)
 
   const conversationId = params.conversationId
   if (!conversationId) {
@@ -61,7 +63,7 @@ export async function POST(req: NextRequest, { params }: Ctx) {
   }
 
   if (isBusiness) {
-    if (!business || !canBusinessMessage(business)) {
+    if (!business || (!canBusinessMessage(business) && !isAdmin)) {
       return NextResponse.json(
         { error: 'An active subscription is required to send messages' },
         { status: 403 }

@@ -4,10 +4,12 @@ import { auth } from '@clerk/nextjs/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { canBusinessMessage, getMonthlyContactLimit } from '@/lib/messaging'
 import type { Business } from '@/types'
+import { isAdminUserId } from '@/lib/admin'
 
 export async function POST(req: NextRequest) {
   const { userId } = auth()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const isAdmin = isAdminUserId(userId)
 
   let body: { va_id?: string; body?: string }
   try {
@@ -35,7 +37,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Complete business onboarding first' }, { status: 403 })
   }
 
-  if (!canBusinessMessage(business)) {
+  if (!canBusinessMessage(business) && !isAdmin) {
     return NextResponse.json(
       { error: 'An active subscription is required to contact VAs' },
       { status: 403 }
@@ -79,7 +81,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Could not verify contact limit' }, { status: 500 })
     }
 
-    if (limit < 999 && (count ?? 0) >= limit) {
+    if (!isAdmin && limit < 999 && (count ?? 0) >= limit) {
       return NextResponse.json(
         { error: `Monthly contact limit reached (${limit} new conversations). Upgrade your plan or wait until next month.` },
         { status: 403 }

@@ -14,7 +14,7 @@ Every VA on ProvenVA passes skill tests, background checks, and portfolio review
 | Hosting | Vercel (free tier) |
 | Database | Supabase (Postgres + RLS) |
 | Auth | Clerk |
-| Payments | Stripe |
+| Payments | Paddle |
 | Styling | Tailwind CSS |
 | Language | TypeScript |
 
@@ -39,14 +39,16 @@ provenva/
 │       ├── checkout/
 │       │   ├── business/route.ts    # Business subscription checkout
 │       │   └── va/route.ts          # VA badge checkout
-│       ├── billing/portal/route.ts  # Stripe billing portal
-│       └── webhooks/stripe/route.ts # Stripe webhook handler
+│       ├── billing/portal/route.ts  # Paddle customer portal
+│       ├── webhooks/paddle/route.ts # Paddle webhook handler
+│       └── webhooks/stripe/route.ts # Legacy alias to Paddle webhook
 ├── components/
 │   ├── Navbar.tsx
 │   └── VACard.tsx
 ├── lib/
 │   ├── supabase.ts
-│   └── stripe.ts
+│   ├── paddle.ts
+│   └── paddle-webhook.ts
 ├── types/index.ts
 ├── middleware.ts                    # Clerk route protection
 ├── supabase-schema.sql             # Run this in Supabase SQL editor
@@ -83,24 +85,26 @@ cp .env.example .env.local
 4. Go to **SQL Editor** → New query → paste the entire contents of `supabase-schema.sql` → Run
 5. This creates all tables, indexes, RLS policies, and 3 sample VAs for testing
 
-### Step 4 — Set up Stripe (payments)
+### Step 4 — Set up Paddle (payments)
 
-1. Go to https://dashboard.stripe.com
-2. Copy your **Publishable key** and **Secret key** into `.env.local`
-3. Create 4 products with monthly prices:
-   - **Business Starter** — $49/month → copy Price ID to `STRIPE_PRICE_BUSINESS_STARTER`
-   - **Business Pro** — $99/month → copy Price ID to `STRIPE_PRICE_BUSINESS_PRO`
-   - **Business Scale** — $149/month → copy Price ID to `STRIPE_PRICE_BUSINESS_SCALE`
-   - **VA Verified Badge** — $29/month → copy Price ID to `STRIPE_PRICE_VA_VERIFIED`
-4. Set up webhook (local testing):
-   ```bash
-   brew install stripe/stripe-cli/stripe
-   stripe login
-   stripe listen --forward-to localhost:3000/api/webhooks/stripe
-   ```
-   Copy the webhook signing secret into `STRIPE_WEBHOOK_SECRET`
-5. For production: add webhook endpoint in Stripe dashboard → `https://yourdomain.com/api/webhooks/stripe`
-   - Events to listen: `checkout.session.completed`, `invoice.paid`, `invoice.payment_failed`, `customer.subscription.deleted`
+1. Go to https://vendors.paddle.com and create your vendor account
+2. In **Developer Tools**, create:
+   - API key → set `PADDLE_API_KEY`
+   - Notification destination webhook secret → set `PADDLE_WEBHOOK_SECRET`
+3. Create 4 recurring prices in Paddle catalog:
+   - **Business Starter** — $49/month → `PADDLE_PRICE_BUSINESS_STARTER`
+   - **Business Pro** — $99/month → `PADDLE_PRICE_BUSINESS_PRO`
+   - **Business Scale** — $149/month → `PADDLE_PRICE_BUSINESS_SCALE`
+   - **VA Verified Badge** — $29/month → `PADDLE_PRICE_VA_VERIFIED`
+4. Set webhook endpoint:
+   - Local/dev: `http://localhost:3000/api/webhooks/paddle`
+   - Production: `https://yourdomain.com/api/webhooks/paddle`
+5. Subscribe to these events:
+   - `transaction.completed`
+   - `subscription.created`
+   - `subscription.updated`
+   - `subscription.past_due`
+   - `subscription.canceled`
 
 ### Step 5 — Run locally
 
@@ -139,7 +143,7 @@ Open http://localhost:3000
 3. Add all environment variables from `.env.local` into Vercel's Environment Variables
 4. Deploy — Vercel auto-deploys on every `git push`
 5. Update `NEXT_PUBLIC_APP_URL` to your Vercel domain
-6. Update Stripe webhook URL to your Vercel domain
+6. Update Paddle webhook URL to your Vercel domain
 
 ---
 
@@ -150,7 +154,7 @@ Open http://localhost:3000
 2. Business record created in Supabase
 3. Browses `/browse` — sees all verified VAs for free
 4. Clicks "Contact this VA" → prompted to subscribe
-5. Subscribes via Stripe → Stripe webhook updates `businesses.plan`
+5. Subscribes via Paddle → webhook updates `businesses.plan`
 6. Can now contact VAs through the platform
 
 ### VA user

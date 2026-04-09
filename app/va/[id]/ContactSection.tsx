@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase'
 import { canBusinessMessage } from '@/lib/messaging'
 import ContactVAActions, { type ContactVariant } from '@/components/ContactVAActions'
 import type { Business } from '@/types'
+import { isAdminUserId } from '@/lib/admin'
 
 export default async function ContactSection({ vaId }: { vaId: string }) {
   const { userId } = auth()
@@ -19,7 +20,8 @@ export default async function ContactSection({ vaId }: { vaId: string }) {
   let variant: ContactVariant
 
   if (business) {
-    if (!canBusinessMessage(business)) {
+    const isAdmin = isAdminUserId(userId)
+    if (!canBusinessMessage(business) && !isAdmin) {
       variant = { kind: 'no_plan' }
     } else {
       const { data: conv } = await supabaseAdmin

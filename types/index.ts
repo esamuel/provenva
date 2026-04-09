@@ -48,6 +48,8 @@ export interface Business {
   industry: string
   company_size: '1-5' | '6-20' | '21-50' | '51-200' | '200+'
   plan: 'starter' | 'pro' | 'scale' | null
+  // Legacy column names kept for backward compatibility.
+  // Values now store Paddle customer/subscription IDs.
   stripe_customer_id: string | null
   stripe_subscription_id: string | null
   subscription_status: 'active' | 'past_due' | 'canceled' | null
@@ -104,10 +106,15 @@ export interface VAApplication {
   linkedin_url: string | null
   status: 'submitted' | 'test_sent' | 'test_completed' | 'approved' | 'rejected'
   test_score: number | null
+  score_accuracy: number | null
+  score_communication: number | null
+  score_tools: number | null
+  reviewer_notes: string | null
   created_at: string
+  updated_at: string
 }
 
-// Stripe plan config
+// Billing plan config
 export const PLANS = {
   starter: { name: 'Starter', price: 49, vas: 5,  features: ['Browse verified VAs', '5 VA contacts/mo', 'Basic matching'] },
   pro:     { name: 'Pro',     price: 99, vas: 20, features: ['Everything in Starter', '20 VA contacts/mo', 'Priority matching', 'Hire analytics'] },

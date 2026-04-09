@@ -229,7 +229,10 @@ export default function HomePage() {
           <div className="flex gap-6 md:justify-center">
             <Link href="/browse" className="hover:text-gray-800">Browse</Link>
             <Link href="/apply" className="hover:text-gray-800">Apply</Link>
-            <Link href="/#pricing" className="hover:text-gray-800">Pricing</Link>
+            <Link href="/pricing" className="hover:text-gray-800">Pricing</Link>
+            <Link href="/terms" className="hover:text-gray-800">Terms</Link>
+            <Link href="/privacy" className="hover:text-gray-800">Privacy</Link>
+            <Link href="/refunds" className="hover:text-gray-800">Refunds</Link>
           </div>
           <p className="md:text-right">© {new Date().getFullYear()} ProvenVA. All rights reserved.</p>
         </div>

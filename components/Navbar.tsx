@@ -9,23 +9,33 @@ import { clerkEnabled } from '@/lib/clerk-config'
 function SignedInNavExtras() {
   const [dashboardHref, setDashboardHref] = useState('/dashboard/business')
   const [showInbox, setShowInbox] = useState(false)
+  const [showAdmin, setShowAdmin] = useState(false)
   useEffect(() => {
     fetch('/api/me')
       .then(r => r.json())
-      .then((d: { business?: boolean; va?: boolean }) => {
+      .then((d: { business?: boolean; va?: boolean; admin?: boolean }) => {
         const b = !!d.business
         const v = !!d.va
+        const a = !!d.admin
         setShowInbox(b || v)
+        setShowAdmin(a)
         if (v && !b) setDashboardHref('/dashboard/va')
+        else if (a && !b) setDashboardHref('/admin')
         else setDashboardHref('/dashboard/business')
       })
       .catch(() => {
         setShowInbox(false)
+        setShowAdmin(false)
         setDashboardHref('/dashboard/business')
       })
   }, [])
   return (
     <>
+      {showAdmin && (
+        <Link href="/admin" className="btn-ghost inline-flex items-center gap-1.5">
+          Admin
+        </Link>
+      )}
       {showInbox && (
         <Link href="/dashboard/messages" className="btn-ghost inline-flex items-center gap-1.5">
           <MessageSquare size={16} /> Inbox
@@ -117,6 +127,7 @@ export default function Navbar() {
                   <Link href="/sign-up" className="btn-primary justify-start" onClick={() => setMobileOpen(false)}>Get started</Link>
                 </SignedOut>
                 <SignedIn>
+                  <Link href="/admin" className="btn-ghost justify-start" onClick={() => setMobileOpen(false)}>Admin</Link>
                   <Link href="/dashboard/messages" className="btn-ghost justify-start" onClick={() => setMobileOpen(false)}>Inbox</Link>
                   <Link href="/dashboard/messages" className="btn-outline justify-start" onClick={() => setMobileOpen(false)}>Dashboard</Link>
                 </SignedIn>

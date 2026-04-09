@@ -7,10 +7,14 @@ import VACard from '@/components/VACard'
 import Link from 'next/link'
 import { MessageSquare, Search, CreditCard, Users } from 'lucide-react'
 import type { VA, Business } from '@/types'
+import { isAdminUserId } from '@/lib/admin'
+import { paymentsPaused } from '@/lib/messaging'
 
 export default async function BusinessDashboard() {
   const { userId } = auth()
   if (!userId) redirect('/sign-in')
+  const isAdmin = isAdminUserId(userId)
+  const paused = paymentsPaused()
 
   const { data: business } = await supabaseAdmin
     .from('businesses')
@@ -39,6 +43,7 @@ export default async function BusinessDashboard() {
             </h1>
             <p className="mt-0.5 text-sm text-slate-500">
               Plan: <span className="capitalize font-medium text-slate-700">{business?.plan ?? 'None'}</span>
+              {isAdmin && <span className="ml-2 badge">Admin override active</span>}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -66,7 +71,7 @@ export default async function BusinessDashboard() {
         </div>
 
         {/* Upgrade banner if no plan */}
-        {!business?.plan && (
+        {!business?.plan && !isAdmin && !paused && (
           <div className="mb-8 flex items-center justify-between rounded-xl border border-brand-100 bg-brand-50 p-5">
             <div>
               <p className="font-semibold text-brand-900">Subscribe to contact VAs</p>

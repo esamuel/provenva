@@ -33,6 +33,7 @@ create table if not exists public.vas (
   avg_response_hours  numeric(4,1),
   completed_jobs      integer not null default 0,
   is_premium          boolean not null default false,
+  -- Legacy column names; may store Stripe or Paddle IDs.
   stripe_customer_id  text,
   stripe_subscription_id text,
   created_at          timestamptz not null default now(),
@@ -49,6 +50,7 @@ create table if not exists public.businesses (
   industry               text,
   company_size           text check (company_size in ('1-5','6-20','21-50','51-200','200+')),
   plan                   text check (plan in ('starter','pro','scale')),
+  -- Legacy column names; may store Stripe or Paddle IDs.
   stripe_customer_id     text,
   stripe_subscription_id text,
   subscription_status    text check (subscription_status in ('active','past_due','canceled')),
@@ -77,10 +79,18 @@ create table if not exists public.va_applications (
   status            text not null default 'submitted'
                       check (status in ('submitted','test_sent','test_completed','approved','rejected')),
   test_score        integer check (test_score between 0 and 100),
+  score_accuracy    integer check (score_accuracy between 0 and 100),
+  score_communication integer check (score_communication between 0 and 100),
+  score_tools       integer check (score_tools between 0 and 100),
   reviewer_notes    text,
   created_at        timestamptz not null default now(),
   updated_at        timestamptz not null default now()
 );
+
+-- Safe re-runs for existing deployments (adds columns if table already existed)
+alter table public.va_applications add column if not exists score_accuracy integer check (score_accuracy between 0 and 100);
+alter table public.va_applications add column if not exists score_communication integer check (score_communication between 0 and 100);
+alter table public.va_applications add column if not exists score_tools integer check (score_tools between 0 and 100);
 
 -- ── Conversations & messages (business ↔ VA inbox) ───────────
 create table if not exists public.conversations (

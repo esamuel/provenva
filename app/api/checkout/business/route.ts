@@ -2,12 +2,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { supabaseAdmin } from '@/lib/supabase'
-import { createBusinessCheckout } from '@/lib/stripe'
+import { createCheckoutSession } from '@/lib/paddle'
 
 const PRICE_MAP: Record<string, string> = {
-  starter: process.env.STRIPE_PRICE_BUSINESS_STARTER!,
-  pro:     process.env.STRIPE_PRICE_BUSINESS_PRO!,
-  scale:   process.env.STRIPE_PRICE_BUSINESS_SCALE!,
+  starter: process.env.PADDLE_PRICE_BUSINESS_STARTER!,
+  pro: process.env.PADDLE_PRICE_BUSINESS_PRO!,
+  scale: process.env.PADDLE_PRICE_BUSINESS_SCALE!,
 }
 
 export async function POST(req: NextRequest) {
@@ -25,14 +25,10 @@ export async function POST(req: NextRequest) {
     .eq('clerk_user_id', userId)
     .single()
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL!
-
-  const session = await createBusinessCheckout({
-    priceId:    PRICE_MAP[plan],
+  const session = await createCheckoutSession({
+    priceId: PRICE_MAP[plan],
     customerId: business?.stripe_customer_id ?? undefined,
-    successUrl: `${appUrl}/dashboard/business?upgraded=1`,
-    cancelUrl:  `${appUrl}/#pricing`,
-    metadata:   { clerk_user_id: userId, plan },
+    metadata: { clerk_user_id: userId, plan },
   })
 
   return NextResponse.json({ url: session.url })
