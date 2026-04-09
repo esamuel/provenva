@@ -2,6 +2,7 @@
 import { notFound } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import { supabase } from '@/lib/supabase'
+import ContactSection from './ContactSection'
 import { CATEGORIES } from '@/types'
 import type { VA } from '@/types'
 import { CheckCircle, Linkedin, ExternalLink, MapPin, Briefcase, Clock } from 'lucide-react'
@@ -153,9 +154,11 @@ export default async function VAProfilePage({ params }: { params: { id: string }
                 </div>
               </div>
 
-              <div className="mt-5">
-                <a href="/sign-up" className="btn-primary w-full">Contact this VA</a>
-                <p className="text-xs text-gray-500 text-center mt-2">Subscribe to unlock contact info</p>
+              <div className="mt-5 space-y-2">
+                <ContactSection vaId={params.id} />
+                <p className="text-xs text-gray-500 text-center">
+                  Messaging is included with an active business plan. New contacts count toward your monthly limit.
+                </p>
               </div>
 
               <div className="mt-5 border-t border-gray-200/60 pt-4">

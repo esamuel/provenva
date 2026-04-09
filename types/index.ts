@@ -55,6 +55,22 @@ export interface Business {
   created_at: string
 }
 
+export interface Conversation {
+  id: string
+  business_id: string
+  va_id: string
+  created_at: string
+  updated_at: string
+}
+
+export interface Message {
+  id: string
+  conversation_id: string
+  sender_role: 'business' | 'va'
+  body: string
+  created_at: string
+}
+
 export interface Hire {
   id: string
   business_id: string

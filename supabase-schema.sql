@@ -82,6 +82,48 @@ create table if not exists public.va_applications (
   updated_at        timestamptz not null default now()
 );
 
+-- ── Conversations & messages (business ↔ VA inbox) ───────────
+create table if not exists public.conversations (
+  id            uuid primary key default uuid_generate_v4(),
+  business_id   uuid not null references public.businesses(id) on delete cascade,
+  va_id         uuid not null references public.vas(id) on delete cascade,
+  created_at    timestamptz not null default now(),
+  updated_at    timestamptz not null default now(),
+  unique (business_id, va_id)
+);
+
+create table if not exists public.messages (
+  id               uuid primary key default uuid_generate_v4(),
+  conversation_id  uuid not null references public.conversations(id) on delete cascade,
+  sender_role      text not null check (sender_role in ('business','va')),
+  body             text not null check (char_length(body) between 1 and 8000),
+  created_at       timestamptz not null default now()
+);
+
+create index if not exists conversations_business_idx on public.conversations(business_id);
+create index if not exists conversations_va_idx on public.conversations(va_id);
+create index if not exists conversations_updated_idx on public.conversations(updated_at desc);
+create index if not exists messages_conversation_idx on public.messages(conversation_id);
+create index if not exists messages_conversation_created_idx on public.messages(conversation_id, created_at);
+
+drop trigger if exists conversations_updated_at on public.conversations;
+create trigger conversations_updated_at
+  before update on public.conversations
+  for each row execute procedure public.set_updated_at();
+
+create or replace function public.bump_conversation_on_message()
+returns trigger language plpgsql as $$
+begin
+  update public.conversations set updated_at = now() where id = new.conversation_id;
+  return new;
+end;
+$$;
+
+drop trigger if exists messages_bump_conversation on public.messages;
+create trigger messages_bump_conversation
+  after insert on public.messages
+  for each row execute procedure public.bump_conversation_on_message();
+
 -- ── Hires table ──────────────────────────────────────────────
 create table if not exists public.hires (
   id                   uuid primary key default uuid_generate_v4(),
@@ -232,6 +274,8 @@ alter table public.vas              enable row level security;
 alter table public.businesses       enable row level security;
 alter table public.va_applications  enable row level security;
 alter table public.hires            enable row level security;
+alter table public.conversations    enable row level security;
+alter table public.messages         enable row level security;
 
 -- VAs: anyone can read verified profiles; only owner can update
 drop policy if exists "verified vas are public" on public.vas;

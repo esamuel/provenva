@@ -2,7 +2,38 @@
 'use client'
 import Link from 'next/link'
 import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
-import { CheckCircle, Search } from 'lucide-react'
+import { CheckCircle, MessageSquare, Search } from 'lucide-react'
+import { useEffect, useState } from 'react'
+
+function SignedInNavExtras() {
+  const [dashboardHref, setDashboardHref] = useState('/dashboard/business')
+  const [showInbox, setShowInbox] = useState(false)
+  useEffect(() => {
+    fetch('/api/me')
+      .then(r => r.json())
+      .then((d: { business?: boolean; va?: boolean }) => {
+        const b = !!d.business
+        const v = !!d.va
+        setShowInbox(b || v)
+        if (v && !b) setDashboardHref('/dashboard/va')
+        else setDashboardHref('/dashboard/business')
+      })
+      .catch(() => {
+        setShowInbox(false)
+        setDashboardHref('/dashboard/business')
+      })
+  }, [])
+  return (
+    <>
+      {showInbox && (
+        <Link href="/dashboard/messages" className="btn-ghost inline-flex items-center gap-1.5">
+          <MessageSquare size={16} /> Inbox
+        </Link>
+      )}
+      <Link href={dashboardHref} className="btn-outline">Dashboard</Link>
+    </>
+  )
+}
 
 export default function Navbar() {
   return (
@@ -36,7 +67,7 @@ export default function Navbar() {
           </SignedOut>
 
           <SignedIn>
-            <Link href="/dashboard/business" className="btn-outline">Dashboard</Link>
+            <SignedInNavExtras />
             <UserButton afterSignOutUrl="/" />
           </SignedIn>
         </div>

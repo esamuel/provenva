@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import { supabaseAdmin } from '@/lib/supabase'
 import Link from 'next/link'
-import { CheckCircle, Clock, AlertCircle } from 'lucide-react'
+import { CheckCircle, Clock, AlertCircle, MessageSquare } from 'lucide-react'
 import type { VA } from '@/types'
 import { CATEGORIES } from '@/types'
 
@@ -31,7 +31,14 @@ export default async function VADashboard() {
     <>
       <Navbar />
       <div className="max-w-3xl mx-auto px-4 py-10">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">VA Dashboard</h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">VA Dashboard</h1>
+          {va && (
+            <Link href="/dashboard/va/messages" className="btn-outline text-sm inline-flex items-center gap-1.5">
+              <MessageSquare size={16} /> Inbox
+            </Link>
+          )}
+        </div>
 
         {!va ? (
           <div className="text-center py-16 border border-dashed border-gray-200 rounded-xl">

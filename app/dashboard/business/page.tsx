@@ -5,7 +5,7 @@ import Navbar from '@/components/Navbar'
 import { supabaseAdmin } from '@/lib/supabase'
 import VACard from '@/components/VACard'
 import Link from 'next/link'
-import { Search, CreditCard, Users } from 'lucide-react'
+import { MessageSquare, Search, CreditCard, Users } from 'lucide-react'
 import type { VA, Business } from '@/types'
 
 export default async function BusinessDashboard() {
@@ -41,9 +41,14 @@ export default async function BusinessDashboard() {
               Plan: <span className="capitalize font-medium text-gray-700">{business?.plan ?? 'None'}</span>
             </p>
           </div>
-          <Link href="/browse" className="btn-primary">
-            <Search size={16} /> Find VAs
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link href="/dashboard/business/messages" className="btn-outline">
+              <MessageSquare size={16} /> Inbox
+            </Link>
+            <Link href="/browse" className="btn-primary">
+              <Search size={16} /> Find VAs
+            </Link>
+          </div>
         </div>
 
         {/* Stats */}
